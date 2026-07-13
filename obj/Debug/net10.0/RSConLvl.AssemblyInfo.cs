@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RSConLvl")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+56e99670be7a552080efffc19449c604fc70e01e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+88e23fc7b8363d2582009c16e0dc07dca924b007")]
 [assembly: System.Reflection.AssemblyProductAttribute("RSConLvl")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RSConLvl")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

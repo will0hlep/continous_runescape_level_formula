@@ -1,0 +1,69 @@
+﻿@page
+@model AboutModel
+
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js">
+MathJax = {
+  tex: {
+    packages: ['base'],              // extensions to use
+    inlineMath: [                    // start/end delimiter pairs for in-line math
+      ['\\(', '\\)']
+    ],
+    displayMath: [                   // start/end delimiter pairs for display math
+      ['\\[', '\\]']
+    ],
+    processEscapes: true,            // use \$ to produce a literal dollar sign
+    processEnvironments: true,       // process \begin{xxx}...\end{xxx} outside math mode
+    processRefs: true,               // process \ref{...} outside of math mode
+    numberPattern:                   // pattern for recognizing numbers
+       /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,
+    initialDigit: /[0-9.,]/,         // pattern for initial digit or decimal point for a number
+    identifierPattern: /^[a-zA-Z]+/, // pattern for multiLetterIdentifiers in \mathrm, etc.
+    initialLetter: /[a-zA-Z]/,       // pattern for initial letter in identifiers
+    tags: 'none',                    // or 'ams' or 'all'
+    tagSide: 'right',                // side for \tag macros
+    tagIndent: '0.8em',              // amount to indent tags
+    tagAlign: 'baseline',            // The rowalign value to use for tag cells
+    useLabelIds: true,               // use label name rather than tag for ids
+    ignoreDuplicateLabels: false,    // prevent error messages for duplicate label ids?
+    mathStyle: 'TeX',                // one of TeX, ISO, French, or upright
+    maxBuffer: 5 * 1024,             // maximum size for the internal TeX string (5K)
+    maxTemplateSubtitutions: 10000,  // maximum number of array template substitutions
+    baseURL:                         // URL for use with links to tags (when there is a <base> tag in effect)
+       (document.getElementsByTagName('base').length === 0) ?
+        '' : String(document.location).replace(/#.*$/, ''),
+    formatError:                     // function called when TeX syntax errors occur
+       (jax, err) => jax.formatError(err),
+    preFilters: [],                  // A list of pre-filters to add to the TeX input jax
+    postFilters: [],                 // A list of post-filters to add to the TeX input jax
+  }
+};
+</script>
+
+<h1>The Goal</h1>
+
+<p>
+    The goal of this project is to create continous and differentiable extentions of RuneScape's experiance functions
+    that can be used to calculate decimal level values for any experiance value between \(0\) and \(200,000,000\).
+</p>
+
+<h1>The Details</h1>
+
+<p>
+    With the exception of the Invention skill, all skills use the following formula to determine how much xp is needed
+    to reach a given level, \(L\).
+</p>
+<p>
+    \[xp(L)=\left\lfloor\frac{1}{4}\sum_{n=1}^{L-1}\left\lfloor n+300*2^{\frac{n}{7}} \right\rfloor\right\rfloor\]
+</p>
+<p>
+    For this project, this formula presents two problems. Firstly, summations are only defined for whole numbers.
+    This could be rectified by 
+    
+    Firstly, \(\left\lfloor x\right\rfloor\) means the greatest integer
+    less than or equal to \(x\), also known as the floor function.
+</p>
+<p>\[\begin{split}
+    xp(L)&=\epsilon(L) + \frac{1}{4}\sum_{n=1}^{L-1}n+300*2^{\frac{n}{7}} \\
+         &=\epsilon(L) + \frac{1}{4}\sum_{n=1}^{L-1}n+75\sum_{n=1}^{L-1}2^{\frac{n}{7}}\\
+         &=\epsilon(L) + \frac{L(L-1)}{8}+75\frac{2^{\frac{L}{7}}-2^{\frac{1}{7}}}{2^{\frac{1}{7}}-1}
+    \end{split}\]</p>
