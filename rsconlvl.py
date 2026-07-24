@@ -33,6 +33,7 @@ parser.add_argument(
     action="store_true")
 args = parser.parse_args()
 
+
 if __name__ == "__main__":
     if args.xp < 0 or args.xp > 200000000:
         raise ValueError("xp must between 0 and 200m (inclusive)")
@@ -181,4 +182,5 @@ if __name__ == "__main__":
             return xp_continous(level) - xp
         return min(max(level,fsolve(func,level)[0]),nextafter(level+1, float('-inf')))
 
+    print(power_fourier_series()[0])
     print(level_continous(args.xp))

@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "k+92st0SdW8=",
+  "dgSpecHash": "YK8FeNWQaVg=",
   "success": true,
-  "projectFilePath": "/media/william/Data/William/Gaming/Runescape/runescape_continuous_level_calc/RSConLvl.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "/Users/william/Documents/RSConLvl/RSConLvl.csproj",
+  "expectedPackageFiles": [
+    "/Users/william/.nuget/packages/mathnet.numerics/5.0.0/mathnet.numerics.5.0.0.nupkg.sha512"
+  ],
   "logs": []
 }
