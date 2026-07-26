@@ -38,7 +38,7 @@ if __name__ == "__main__":
     if args.xp < 0 or args.xp > 200000000:
         raise ValueError("xp must between 0 and 200m (inclusive)")
     if args.elite:
-        LEVEL = 150
+        LEVEL = 151
 
 
         def xp_calc(elite_level: int) -> int:
