@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using RSConLvl.Models;
 using System.Net.Http;
 using System.Reflection.Metadata.Ecma335;
+using System.Net.Http.Json;
 
 namespace RSConLvl.Pages;
 
@@ -26,7 +27,6 @@ public class HomeController : Controller
 
     private static int XpCalc(int level)
     {
-        Console.WriteLine("test");
         //"""Returns an integer xp value for an integer level value"""
         double xp = 0;
         for (int i = 1; i < level; i++)
@@ -82,15 +82,18 @@ public class HomeController : Controller
         return xp;
     }
 
-    private static double LevelContinous(int xp)
+    private static double LevelContinous(int xp, int game_level)
     {
         //Returns a float level value for a float xp value
-        double level = Brent.FindRoot(XpContinuous, 1, 127);
-        int nearest = (int) Math.Round(level);
-        if (XpCalc(nearest) == xp)
+        if (XpCalc(game_level) == xp)
         {
-            return nearest;
+            return game_level;
         }
+        double Function(double level)
+        {
+            return XpContinuous(level) - xp;
+        }
+        double level = Brent.FindRoot(Function, game_level, game_level + 1);
         return level;
     }
 
@@ -196,15 +199,18 @@ public class HomeController : Controller
         return xp;
     }
 
-    private static double EliteLevelContinous(int xp)
+    private static double EliteLevelContinous(int xp, int game_level)
     {
         //Returns a float level value for a float xp value
-        double level = Brent.FindRoot(EliteXpContinuous, 1, 151);
-        int nearest = (int) Math.Round(level);
-        if (eliteLevels[nearest - 1] == xp)
+        if (XpCalc(game_level) == xp)
         {
-            return nearest;
+            return game_level;
         }
+        double Function(double level)
+        {
+            return EliteXpContinuous(level) - xp;
+        }
+        double level = Brent.FindRoot(Function, game_level, game_level + 1);
         return level;
     }
 
@@ -219,7 +225,6 @@ public class HomeController : Controller
         return View(new User());
     }
 
-
     [HttpPost]
     public async Task<IActionResult> PerformUsernameSearch(User model)
     {
@@ -227,7 +232,25 @@ public class HomeController : Controller
         {
             var client = _httpClientFactory.CreateClient();
             var url = $"https://secure.runescape.com/m=hiscore{model.URLModifier}/index_lite.json?player={Uri.EscapeDataString(model.Username)}";
-            model.Notes = await client.GetStringAsync(url);
+            //model.Notes = await client.GetStringAsync(url);
+            var hiscore = await client.GetFromJsonAsync<HiscoreResponse>(url) ?? throw new Exception();
+            foreach (Skill Skill in hiscore.Skills)
+            {
+                if (Skill.Name != "Overall")
+                {
+                    Console.WriteLine(Skill.Name);
+                    Console.WriteLine(Skill.Xp);
+                    Console.WriteLine(Skill.Level);
+                    if (Skill.Name == "Invention")
+                    {
+                        Console.WriteLine(EliteLevelContinous(Skill.Xp, Skill.Level));
+                    }
+                    else
+                    {
+                        Console.WriteLine(LevelContinous(Skill.Xp, Skill.Level));
+                    }
+                }
+            }
         }
         catch (HttpRequestException ex)
         {
