@@ -1,15 +1,29 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.RootFinding;
 using System.Runtime.CompilerServices;
+using RSConLvl.Models;
+using System.Net.Http;
+using System.Reflection.Metadata.Ecma335;
 
 namespace RSConLvl.Pages;
 
-public class IndexModel : PageModel
+public class HomeController : Controller
 {   
+
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<HomeController> _logger;
+
+    public HomeController(
+        IHttpClientFactory httpClientFactory,
+        ILogger<HomeController> logger)
+    {
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
+    }
+
     private static int XpCalc(int level)
     {
         Console.WriteLine("test");
@@ -193,4 +207,34 @@ public class IndexModel : PageModel
         }
         return level;
     }
+
+    public IActionResult About()
+    {
+        return View();
+    }
+
+    [HttpGet]
+    public IActionResult Index()
+    {
+        return View(new User());
+    }
+
+
+    [HttpPost]
+    public async Task<IActionResult> PerformUsernameSearch(User model)
+    {
+        try
+        {
+            var client = _httpClientFactory.CreateClient();
+            var url = $"https://secure.runescape.com/m=hiscore{model.URLModifier}/index_lite.json?player={Uri.EscapeDataString(model.Username)}";
+            model.Notes = await client.GetStringAsync(url);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Failed to retrieve RuneScape data.");
+            TempData["Error"] = "Unable to retrieve player data right now.";
+        }
+        return View("Index", model);
+    }
+
 }

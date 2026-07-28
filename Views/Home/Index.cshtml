@@ -1,0 +1,55 @@
+﻿@model RSConLvl.Models.User
+@{
+    ViewData["Title"] = "Home page";
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mt-3 shadow-sm border-start border-4 border-danger" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+            <div>
+                <strong>Error Occurred:</strong><br />
+                @TempData["Error"]
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="text-center">
+    @*Header Row*@
+    <form asp-action="PerformUsernameSearch" method="post">
+        <div class="d-flex justify-content-center align-items-center gap-3 mb-4">
+            <div style="width: 250px;">
+                <input type="text"
+                    id="Username"
+                    asp-for="Username"
+                    class="form-control shadow-sm"
+                    placeholder="Username"
+                    required>
+            </div>
+            <div style="width: 250px;">
+                <select id="game" asp-for="URLModifier" class="form-select shadow-sm">
+                    <option value="" selected>RuneScape 3</option>
+                    <option value="_oldschool">Old School RuneScape</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-1"></i> Search
+            </button>
+        </div>
+    </form>
+    @*Return Row*@
+    <div class="d-flex justify-content-center">
+        <textarea id="results"
+                  asp-for="Notes"
+                  class="form-control shadow-sm"
+                  rows="15"
+                  style="max-width: 800px;"
+                  readonly></textarea>
+    </div>
+</div>
+
+@*https://secure.runescape.com/m=hiscore/index_lite.ws?player=X*@
+@*https://secure.runescape.com/m=hiscore_oldschool/index_lite.json?player=X*@
