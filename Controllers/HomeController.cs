@@ -129,7 +129,6 @@ public class HomeController : Controller
 
     private static EliteCoefficients ElitePowerFourierSeries()
     {
-        Console.WriteLine("This Ran");
         var M = Matrix<double>.Build;
         var V = Vector<double>.Build;
         int[][] polynomials = [[1,2,1], [2,10,4], [10,20,4], [20,30,4],
@@ -219,7 +218,7 @@ public class HomeController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index()
+    public IActionResult Home()
     {
         return View(new User());
     }
@@ -252,7 +251,7 @@ public class HomeController : Controller
             _logger.LogError(ex, "Failed to retrieve RuneScape data.");
             TempData["Error"] = "Unable to retrieve player data.";
         }
-        return View("Index", model);
+        return View("Home", model);
     }
 
 }
