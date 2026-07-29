@@ -8,7 +8,6 @@ namespace RSConLvl.Models
         public string Username { get; set; } = "";
         public string URLModifier { get; set; } = "";
         public HiscoreResponse? Skills { get; set; }
-        //public string? Notes { get; set; }
     }
 
     public class HiscoreResponse
@@ -25,6 +24,7 @@ namespace RSConLvl.Models
         public required int Rank { get; set; }
         public required int Level { get; set; }
         public required int Xp { get; set; }
+        public double? VirtualLevel { get; set; }
     }
 
     public class Activity

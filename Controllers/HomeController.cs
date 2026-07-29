@@ -1,13 +1,8 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.RootFinding;
-using System.Runtime.CompilerServices;
 using RSConLvl.Models;
-using System.Net.Http;
-using System.Reflection.Metadata.Ecma335;
-using System.Net.Http.Json;
 
 namespace RSConLvl.Pages;
 
@@ -31,7 +26,7 @@ public class HomeController : Controller
         double xp = 0;
         for (int i = 1; i < level; i++)
         {
-            xp += 0.25*Math.Floor(i + 300 * Math.Pow(2, i / 7));
+            xp += 0.25*Math.Floor(i + 300 * Math.Pow(2, i / 7.0));
         }
         return (int) Math.Floor(xp);
     }
@@ -39,11 +34,11 @@ public class HomeController : Controller
     private static double XpApprox(double level)
     {
         //"""Returns an approximate float xp value for a float level value"""
-        double xp = Math.Pow(2, level/7);
-        xp -= Math.Pow(2, 1/7);
+        double xp = Math.Pow(2, level/7.0);
+        xp -= Math.Pow(2, 1/7.0);
         xp *= 75;
-        xp /= Math.Pow(2, 1/7) - 1;
-        xp += level*(level-1)/8;
+        xp /= Math.Pow(2, 1/7.0) - 1;
+        xp += level*(level-1)/8.0;
         return xp;
     }
 
@@ -57,14 +52,15 @@ public class HomeController : Controller
         for (int i = 0; i < 127; i++)
         {
             A[i,0] = i;
-            b[i] = XpCalc(i) - XpApprox(i);
+            b[i] = XpCalc(i + 1) - XpApprox((double) i + 1);
             for (int j = 1; j < 64; j++)
             {
-                A[i,2*j] = Math.Cos(2*Math.PI*i*j/127);
-                A[i,2*j-1] = Math.Sin(2*Math.PI*i*j/127);
+                A[i,2*j] = Math.Cos(2*Math.PI*i*j/127.0);
+                A[i,2*j-1] = Math.Sin(2*Math.PI*i*j/127.0);
             }
         }
-        return A.Solve(b);
+        var result = A.Solve(b);
+        return result;
     }
 
     private static readonly Vector<double> coefficients = PowerFourierSeries();
@@ -76,24 +72,25 @@ public class HomeController : Controller
         xp += coefficients[0] * level;
         for (int i = 1; i < 64; i++)
         {
-            xp += coefficients[2*i]*Math.Cos(2*Math.PI*level*i/127);
-            xp += coefficients[2*i-1]*Math.Sin(2*Math.PI*level*i/127);
+            xp += coefficients[2*i]*Math.Cos(2*Math.PI*level*i/127.0);
+            xp += coefficients[2*i-1]*Math.Sin(2*Math.PI*level*i/127.0);
         }
         return xp;
     }
 
-    private static double LevelContinous(int xp, int game_level)
+    private static double LevelContinous(int xp)
     {
         //Returns a float level value for a float xp value
-        if (XpCalc(game_level) == xp)
-        {
-            return game_level;
-        }
         double Function(double level)
         {
             return XpContinuous(level) - xp;
         }
-        double level = Brent.FindRoot(Function, game_level, game_level + 1);
+        double level = Brent.FindRoot(Function, 1, 127);
+        int nearest = (int)Math.Round(level);
+        if (XpCalc(nearest) == xp)
+        {
+            return nearest;
+        }
         return level;
     }
 
@@ -132,10 +129,11 @@ public class HomeController : Controller
 
     private static EliteCoefficients ElitePowerFourierSeries()
     {
+        Console.WriteLine("This Ran");
         var M = Matrix<double>.Build;
         var V = Vector<double>.Build;
         int[][] polynomials = [[1,2,1], [2,10,4], [10,20,4], [20,30,4],
-            [30,40,4], [40,50,4], [0,60,4], [60,70,4], [70,80,4], [80,90,4],
+            [30,40,4], [40,50,4], [50,60,4], [60,70,4], [70,80,4], [80,90,4],
             [90,100,4], [100,150,6]];
         double[][] polynomialCoefficients = new double[12][];
         Vector<double>[] fourierCoefficients = new Vector<double>[12];
@@ -160,12 +158,12 @@ public class HomeController : Controller
                 b[j] = xp[j];
                 for (int k = 1; k < (seriesSize+1)/2; k++)
                 {
-                    A[j,2*k] = Math.Cos(2*Math.PI*level[j]*k/(seriesSize + (i == 11? 1 : 0)));
-                    A[j,2*k-1] = Math.Sin(2*Math.PI*level[j]*k/(seriesSize + (i == 11? 1 : 0)));
+                    A[j,2*k] = Math.Cos(2*Math.PI*level[j]*k/(double)(seriesSize + (i == 11? 1 : 0)));
+                    A[j,2*k-1] = Math.Sin(2*Math.PI*level[j]*k/(double)(seriesSize + (i == 11? 1 : 0)));
                 }
                 for (int k = 0; k <= polynomials[i][2]; k++)
                 {
-                    b[j] -= polynomialCoefficients[i][polynomials[i][2]-k] * Math.Pow(level[j], k);
+                    b[j] -= polynomialCoefficients[i][k] * Math.Pow(level[j], k);
                 }
             }
             fourierCoefficients[i] = A.Solve(b);
@@ -187,30 +185,31 @@ public class HomeController : Controller
         double xp = 0;
         for (int i = 0; i <= polynomial_degree; i++)
         {
-            xp += eliteCoefficients.PolynomialCoefficients[tier][polynomial_degree-i] * Math.Pow(level, i);
+            xp += eliteCoefficients.PolynomialCoefficients[tier][i] * Math.Pow(level, i);
         }
         xp += eliteCoefficients.FourierCoefficients[tier][0];
         int seriesSize = eliteCoefficients.Polynomials[tier][1]-eliteCoefficients.Polynomials[tier][0] + 1;
         for (int i = 1; i < (seriesSize+1)/2; i++)
         {
-            xp += eliteCoefficients.FourierCoefficients[tier][2*i] * Math.Cos(2*Math.PI*level*i/(seriesSize + (tier == 11? 1 : 0)));
-            xp += eliteCoefficients.FourierCoefficients[tier][2*i-1] * Math.Sin(2*Math.PI*level*i/(seriesSize + (tier == 11? 1 : 0)));
+            xp += eliteCoefficients.FourierCoefficients[tier][2*i] * Math.Cos(2*Math.PI*level*i/(double)(seriesSize + (tier == 11? 1 : 0)));
+            xp += eliteCoefficients.FourierCoefficients[tier][2*i-1] * Math.Sin(2*Math.PI*level*i/(double)(seriesSize + (tier == 11? 1 : 0)));
         }
         return xp;
     }
 
-    private static double EliteLevelContinous(int xp, int game_level)
+    private static double EliteLevelContinous(int xp)
     {
         //Returns a float level value for a float xp value
-        if (XpCalc(game_level) == xp)
-        {
-            return game_level;
-        }
         double Function(double level)
         {
             return EliteXpContinuous(level) - xp;
         }
-        double level = Brent.FindRoot(Function, game_level, game_level + 1);
+        double level = Brent.FindRoot(Function, 1, 151);
+        int nearest = (int)Math.Round(level);
+        if (XpCalc(nearest) == xp)
+        {
+            return nearest;
+        }
         return level;
     }
 
@@ -232,22 +231,18 @@ public class HomeController : Controller
         {
             var client = _httpClientFactory.CreateClient();
             var url = $"https://secure.runescape.com/m=hiscore{model.URLModifier}/index_lite.json?player={Uri.EscapeDataString(model.Username)}";
-            //model.Notes = await client.GetStringAsync(url);
             var hiscore = await client.GetFromJsonAsync<HiscoreResponse>(url) ?? throw new Exception();
             foreach (Skill Skill in hiscore.Skills)
             {
                 if (Skill.Name != "Overall")
                 {
-                    Console.WriteLine(Skill.Name);
-                    Console.WriteLine(Skill.Xp);
-                    Console.WriteLine(Skill.Level);
                     if (Skill.Name == "Invention")
                     {
-                        Console.WriteLine(EliteLevelContinous(Skill.Xp, Skill.Level));
+                        Skill.VirtualLevel = EliteLevelContinous(Skill.Xp);
                     }
                     else
                     {
-                        Console.WriteLine(LevelContinous(Skill.Xp, Skill.Level));
+                        Skill.VirtualLevel = LevelContinous(Skill.Xp);
                     }
                 }
             }
@@ -255,7 +250,7 @@ public class HomeController : Controller
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Failed to retrieve RuneScape data.");
-            TempData["Error"] = "Unable to retrieve player data right now.";
+            TempData["Error"] = "Unable to retrieve player data.";
         }
         return View("Index", model);
     }
